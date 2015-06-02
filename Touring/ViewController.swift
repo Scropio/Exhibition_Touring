@@ -10,9 +10,36 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    var exhibition:Exhibitions!
+    var collectionArray:[Collections] = []
+    
+    var displayJson:[JSON] = []
+    var previousDisplay = 0
+    var currentDisplay = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        let detailItem = NSURL(string: "http://104.199.133.111:3000/exhibitions?_id=553e6aa20af74af710223374&render=all")
+        request(.GET, detailItem!).responseJSON
+            {(request, response, data, error) in
+                if (data != nil) && (response?.statusCode == 200)
+                {
+                    let detailJson = JSON(data!)
+                    
+                    
+                    self.exhibition = Exhibitions(JsonString: detailJson[0])
+                    
+                    //                    NSLog("%@", detailJson.string!)
+                    
+                    self.collectionArray = self.exhibition.FlatCollectionsArry
+                    //                    for var i=0;i<self.collectionArray.count;i++
+                    //                    {
+                    //                        self.displayJson.append(self.collectionArray[i].C_JSON)
+                    //                    }
+                    //                    self.getCollectionsIdList(self.displayJson)
+                }
+        }
+
     }
 
     override func didReceiveMemoryWarning() {
