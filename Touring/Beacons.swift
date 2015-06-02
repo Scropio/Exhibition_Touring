@@ -24,7 +24,7 @@ class Beacons: Node {
         self.UUID = Identifier
         
         self.RSSI = rssi
-        
-        
     }
+    
+    
 }

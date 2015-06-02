@@ -29,53 +29,57 @@ class Exhibitions: NSObject {
     func printTree(RootCollection cCollection : Collections)
     {
         NSLog("----------------------------------------------------------")
-        NSLog("ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d",
+        NSLog("ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d Ghost:%@",
                 cCollection.C_ID,
                 cCollection.C_NAME,
                 cCollection.C_NAME_CHT,
                 cCollection.INDEX,
                 cCollection.PARENT,
                 cCollection.PREV,
-                cCollection.NEXT)
+                cCollection.NEXT,
+                cCollection.GHOST.description)
         
         for var i = 0 ; i < cCollection.COLLECTs.count ; i++
         {
             var lv1Node = cCollection.COLLECTs[i]
             
-            NSLog("2  ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d",
+            NSLog("2  ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d Ghost:%@",
                 lv1Node.C_ID,
                 lv1Node.C_NAME,
                 lv1Node.C_NAME_CHT,
                 lv1Node.INDEX,
                 lv1Node.PARENT,
                 lv1Node.PREV,
-                lv1Node.NEXT)
+                lv1Node.NEXT,
+                lv1Node.GHOST.description)
             
             for var j = 0 ; j < lv1Node.COLLECTs.count ; j++
             {
                 var lv2Node = lv1Node.COLLECTs[j]
                 
-                NSLog("3    ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d",
+                NSLog("3    ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d Ghost:%@",
                     lv2Node.C_ID,
                     lv2Node.C_NAME,
                     lv2Node.C_NAME_CHT,
                     lv2Node.INDEX,
                     lv2Node.PARENT,
                     lv2Node.PREV,
-                    lv2Node.NEXT)
+                    lv2Node.NEXT,
+                    lv2Node.GHOST.description)
                 
                 for var k = 0 ; k < lv2Node.COLLECTs.count ; k++
                 {
                     var lv3Node = lv2Node.COLLECTs[k]
                     
-                    NSLog("4      ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d",
+                    NSLog("4      ID:%@ Name:%15@ CHT:%15@ INDEX:%3d PARENT:%3d PREV:%3d NEXT:%3d Ghost:%@",
                         lv3Node.C_ID,
                         lv3Node.C_NAME,
                         lv3Node.C_NAME_CHT,
                         lv3Node.INDEX,
                         lv3Node.PARENT,
                         lv3Node.PREV,
-                        lv3Node.NEXT)
+                        lv3Node.NEXT,
+                        lv3Node.GHOST.description)
                 }
                 
             }
@@ -96,52 +100,126 @@ class Exhibitions: NSObject {
     
         var cIndex : Int = 0
         
-        var cRoot : Collections = Collections(Json: Json["collections"][0],
-                                              Parent: -1,
-                                              Index: cIndex,
-                                              isRoot: true)
+        var cRoot : Collections!
         
-        var Lv1Json = Json["collections"]
-        for var i = 1 ; i < Json["collections"].count ; i++
-        {
+        var Lv1Json = Json["collections"][0]["collections"]
 
-            var Lv1Node = Collections(Json: Lv1Json[i],
-                                      Parent: cRoot.INDEX,
-                                      Index: ++cIndex,
-                                      isRoot: false)
-            
-            cRoot.COLLECTs.append(Lv1Node)
-            
-            var Lv2Json = Lv1Json[i]["collections"]
-            
-            for var j = 0 ; j < Lv2Json.count ; j++
+        var TreeList = NSMutableDictionary()
+        var TreeID : Int = 0
+        
+        for var i = 0 ; i < Lv1Json.count ; i++
+        {
+            if Lv1Json[i]["where"][0]["_id"] != nil
             {
-                var Lv2Node = Collections(Json: Lv2Json[j],
-                                          Parent: Lv1Node.INDEX,
-                                          Index: ++cIndex,
-                                          isRoot: false)
+                let cTree : String = Lv1Json[i]["where"][0]["_id"].string!
                 
-                Lv1Node.COLLECTs.append(Lv2Node)
-                
-                var Lv3Json = Lv2Json[j]["collections"]
-                
-                for var k = 0 ; k < Lv3Json.count ; k++
+                if TreeList[cTree] == nil
                 {
-                    var Lv3Node = Collections(Json: Lv3Json[k],
-                                              Parent: Lv2Node.INDEX,
-                                              Index: ++cIndex,
-                                              isRoot: false)
-                    
-                    Lv2Node.COLLECTs.append(Lv3Node)
+                    TreeList.setValue(TreeID++, forKey: cTree)
                 }
             }
         }
         
+        for var t = 0 ; t < TreeID ; t++
+        {
+            cRoot = Collections(Json: Json["collections"][0],
+                                Parent: -1,
+                                Index: cIndex,
+                                isRoot: true)
+            
+            FlatCollectionsArry.append(cRoot)
+            ID_Collections.setValue(cRoot, forKey: cRoot.C_ID)
+            ID_Wheres.setValue(t, forKey: cRoot.C_ID)
+            
+            for var i = 0 ; i < Lv1Json.count ; i++
+            {
+
+                var Lv1Node = Collections(Json: Lv1Json[i],
+                                          Parent: cRoot.INDEX,
+                                          Index: ++cIndex,
+                                          isRoot: false)
+                
+                cRoot.COLLECTs.append(Lv1Node)
+                
+                if cRoot.BEACONs.count > 0
+                {
+                    for var b = 0 ; b < Lv1Node.BEACONs.count ; b++
+                    {
+                        Beacon_Collection.setValue(cRoot.C_ID, forKey: cRoot.BEACONs[b].UUID)
+                    }
+                }
+                
+                cRoot.Structure.append(Lv1Node)
+                FlatCollectionsArry.append(Lv1Node)
+                ID_Collections.setValue(Lv1Node, forKey: Lv1Node.C_ID)
+                ID_Wheres.setValue(t, forKey: Lv1Node.C_ID)
+                
+                var Lv2Json = Lv1Json[i]["collections"]
+                
+                for var j = 0 ; j < Lv2Json.count ; j++
+                {
+                    var Lv2Node = Collections(Json: Lv2Json[j],
+                                              Parent: Lv1Node.INDEX,
+                                              Index: ++cIndex,
+                                              isRoot: false)
+                    
+                    Lv1Node.COLLECTs.append(Lv2Node)
+                    
+                    if Lv2Node.BEACONs.count > 0
+                    {
+                        for var b = 0 ; b < Lv2Node.BEACONs.count ; b++
+                        {
+                            Beacon_Collection.setValue(Lv2Node.C_ID, forKey: Lv2Node.BEACONs[b].UUID)
+                        }
+                    }
+                    
+                    cRoot.Structure.append(Lv2Node)
+                    FlatCollectionsArry.append(Lv2Node)
+                    ID_Collections.setValue(Lv2Node, forKey: Lv2Node.C_ID)
+                    ID_Wheres.setValue(t, forKey: Lv2Node.C_ID)
+                    
+                    var Lv3Json = Lv2Json[j]["collections"]
+                    
+                    for var k = 0 ; k < Lv3Json.count ; k++
+                    {
+                        var Lv3Node = Collections(Json: Lv3Json[k],
+                                                  Parent: Lv2Node.INDEX,
+                                                  Index: ++cIndex,
+                                                  isRoot: false)
+                        
+                        Lv2Node.COLLECTs.append(Lv3Node)
+                        
+                        if Lv3Node.BEACONs.count > 0
+                        {
+                            for var b = 0 ; b < Lv1Node.BEACONs.count ; b++
+                            {
+                                Beacon_Collection.setValue(Lv3Node.C_ID, forKey: Lv3Node.BEACONs[b].UUID)
+                            }
+                        }
+                        
+                        cRoot.Structure.append(Lv3Node)
+                        FlatCollectionsArry.append(Lv3Node)
+                        ID_Collections.setValue(Lv3Node, forKey: Lv3Node.C_ID)
+                        ID_Wheres.setValue(t, forKey: Lv3Node.C_ID)
+                    }
+                }
+            }
+            
+            cRoot.Structure[0].PREV = cRoot.Structure.count-1
+            cRoot.Structure[cRoot.Structure.count-1].NEXT = 1
+            cRoot.Structure[1].PREV = cRoot.Structure.count-1
+            
+            CollectionArray.append(cRoot)
+        }
+        
         self.printTree(RootCollection: cRoot)
         
-//        self.BuildTree(Collection: cRoot, Json: Json)
+        for var g = 0 ; g < FlatCollectionsArry.count ; g++
+        {
+            println(String(format:"Flat[%d]=%@",g,FlatCollectionsArry[g].C_NAME))
+        }
+
         
-//        printTree(Collection: cRoot, Level: 0)
         
         
         

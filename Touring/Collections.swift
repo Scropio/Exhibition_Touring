@@ -17,7 +17,7 @@ class Collections: Node {
     var C_JSON : JSON!
     
     var COLLECTs = [Collections]()
-    var BEACONs : Beacons!
+    var BEACONs = [Beacons]()
     var VISITOR : Bool!
     var GHOST : Bool!
     var Root : Bool!
@@ -63,18 +63,28 @@ class Collections: Node {
         
         self.Root       = _root
         
-        json["ghost"].bool  != nil ? (self.GHOST = json["ghost"].bool) : (self.GHOST = false)
+        json["ghost"].bool != nil ? (self.GHOST = json["ghost"].bool!) : (self.GHOST = false)
+        
+        if json["ibeacons"].count > 0
+        {
+            for var i = 0 ; i < json["ibeacons"].count ; i++
+            {
+                var cBeacon : Beacons = Beacons(Major_Minor: json["ibeacons"][i]["uuid"].string! , RSSI: json["ibeacons"][i]["rssi"].int!)
+                self.BEACONs.append(cBeacon)
+            }
+        }
 
         self.VISITOR    = false
         
-        NSLog("ID:%@ Name:%@ CHT:%@ INDEX:%d PARENT:%d PREV:%d NEXT:%d",
+        NSLog("ID:%@ Name:%@ CHT:%@ INDEX:%d PARENT:%d PREV:%d NEXT:%d Ghost:%@",
             self.C_ID,
             self.C_NAME,
             self.C_NAME_CHT,
             self.INDEX,
             self.PARENT,
             self.PREV,
-            self.NEXT)
+            self.NEXT,
+            self.GHOST)
     }
     
     init(ID _ID:String,Parent _PARENT:Int,Index _Index:Int ,isRoot _root:Bool)
@@ -197,7 +207,10 @@ class Collections: Node {
             
             if !FindHistory
             {
-                HistoryList.append(PreParentList[i])
+                if PreParentList[i].GHOST == false
+                {
+                    HistoryList.append(PreParentList[i])
+                }
             }
         }
         //GHOST Process
@@ -286,6 +299,22 @@ class Collections: Node {
         for var i = 0 ; i < FullRecommand.count-1; i++
         {
             RecommandList.append(FullRecommand[i])
+        }
+        
+        for var i = 0 ; i < HistoryList.count ; i++
+        {
+            if HistoryList[i].GHOST == true
+            {
+                HistoryList.removeAtIndex(i)
+            }
+        }
+        
+        for var i = 0 ; i < RecommandList.count ; i++
+        {
+            if RecommandList[i].GHOST == true
+            {
+                RecommandList.removeAtIndex(i)
+            }
         }
     }
     

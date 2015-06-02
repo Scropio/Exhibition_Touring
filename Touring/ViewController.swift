@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let detailItem = NSURL(string: "http://104.199.133.111:3000/exhibitions?_id=553e6aa20af74af710223374&render=all")
+        let detailItem = NSURL(string: "http://104.199.133.111:3000/exhibitions?_id=552376d67320e1516264636b&render=all")
         request(.GET, detailItem!).responseJSON
             {(request, response, data, error) in
                 if (data != nil) && (response?.statusCode == 200)
@@ -32,11 +32,11 @@ class ViewController: UIViewController {
                     //                    NSLog("%@", detailJson.string!)
                     
                     self.collectionArray = self.exhibition.FlatCollectionsArry
-                    //                    for var i=0;i<self.collectionArray.count;i++
-                    //                    {
-                    //                        self.displayJson.append(self.collectionArray[i].C_JSON)
-                    //                    }
-                    //                    self.getCollectionsIdList(self.displayJson)
+                    
+                    for var i = 0 ; i < self.collectionArray.count ; i++
+                    {
+                        NSLog("%@  %@",self.collectionArray[i].C_ID ,self.collectionArray[i].C_NAME)
+                    }
                 }
         }
 
